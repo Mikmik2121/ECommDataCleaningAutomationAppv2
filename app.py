@@ -1,5 +1,5 @@
 # E-COMMERCE DATA PROCESSING TOOL
-# Version: 2.0
+# Version: 2.0.0
 # Date: September 10, 2026
 
 import streamlit as st
@@ -52,9 +52,9 @@ def detect_platform(filename):
         return "tiktok"
     return None
 
-# =========================
-# CLEANING FUNCTIONS (FULL)
-# =========================
+# =================================
+# RAW SALES DATA CLEANING FUNCTIONS
+# =================================
 
 def clean_lazada(df):
     columns_to_keep = [
@@ -270,8 +270,8 @@ def clean_shopify(df):
 
     df = df[columns_to_keep].copy()
 
-    cols_to_fill = ['Financial Status', 'Fulfillment Status', 'Email', 'Accepts Marketing', 'Subtotal', 'Shipping', 'Taxes', 'Total', 'Discount Code',
-                   'Discount Amount', 'Shipping Method', 'Payment Method', 'Payment Reference']
+    cols_to_fill = ['Financial Status', 'Fulfillment Status', 'Email', 'Accepts Marketing', 'Subtotal', 'Shipping', 
+                    'Taxes', 'Total', 'Discount Code', 'Discount Amount', 'Shipping Method', 'Payment Method', 'Payment Reference']
     df[cols_to_fill] = df.groupby('Name')[cols_to_fill].transform('ffill')
     
     col_index = df.columns.get_loc("Lineitem price")
@@ -375,11 +375,157 @@ def clean_tiktok(df):
 
     return df
 
+# =============================================================================================
+# RAW PRODUCT TRAFFIC DATA CLEANING FUNCTIONS
+# =============================================================================================
+
+def clean_lazada_pt(df):
+    df = df[df['Seller SKU'] == "-"]
+
+    columns_to_keep = [
+        'Product ID',
+        'Seller SKU',
+        'Product Name',
+        'Product Pageviews',
+        'Product Clicks',
+        'Orders',
+        'Add to Cart Units',
+        'CTR',
+        'Conversion Rate'
+    ]
+    
+    for col in columns_to_keep:
+        if col not in df.columns:
+            df[col] = pd.NA
+    
+    df = df[columns_to_keep].copy()
+
+    df['Conversion Rate'] = (df['Conversion Rate'].str.replace('%', '', regex=True).astype(float) / 100)
+
+    df['Product Pageviews'] = df['Product Pageviews'].astype(int)
+    df['Orders'] = df['Orders'].astype(int)
+    df['Add to Cart Units'] = df['Add to Cart Units'].astype(int)
+    df['Conversion Rate'] = df['Conversion Rate'].astype(float)
+
+    id_columns = ['Product ID']
+    for col in id_columns:
+        if col in df.columns:
+            df[col] = df[col].astype(str)
+
+    return df
+
+
+def clean_shopee_pt(df):
+    df = df[df['SKU'] == "-"]
+
+    # Columns to keep
+    columns_to_keep = [
+        'Item ID',
+        'Parent SKU',
+        'Product',
+        'Product Impression',
+        'Product Clicks',
+        'Confirmed Order',
+        'Units (Add to Cart)',
+        'CTR',
+        'Order Conversion Rate (Confirmed Order)'
+    ]
+
+    df = df[columns_to_keep].copy()
+
+    df['CTR'] = df['CTR'].str.replace('%', '', regex=True).astype(float) / 100
+    df['Order Conversion Rate (Confirmed Order)'] = (
+        df['Order Conversion Rate (Confirmed Order)']
+        .str.replace('%', '', regex=True)
+        .astype(float) / 100
+    )
+
+    df['Product Impression'] = df['Product Impression'].astype(int)
+    df['Product Clicks'] = df['Product Clicks'].astype(int)
+    df['Confirmed Order'] = df['Confirmed Order'].astype(int)
+    df['Units (Add to Cart)'] = df['Units (Add to Cart)'].astype(int)
+    df['CTR'] = df['CTR'].astype(float)
+    df['Order Conversion Rate (Confirmed Order)'] = df['Order Conversion Rate (Confirmed Order)'].astype(float)
+
+    id_columns = ['Item ID', 'Parent SKU']
+    for col in id_columns:
+        if col in df.columns:
+            df[col] = df[col].astype(str)
+
+    return df
+
+
+def clean_zalora_pt(df):
+    df['Add to Cart Units'] = df['Gross Orders']
+
+    columns_to_keep = [
+        'Config sku',
+        'Parent SKU',
+        'Product Name',
+        'Impression views',
+        'Product Clicks',
+        'Gross Orders',
+        'Add to Cart Units',
+        'CTR',
+        'Conversion Rate'
+    ]
+    
+    for col in columns_to_keep:
+        if col not in df.columns:
+            df[col] = pd.NA
+
+    df = df[columns_to_keep].copy()
+
+    df['Conversion Rate'] = (df['Conversion Rate'].astype(float) / 100)
+
+    df['Impression views'] = df['Impression views'].astype(int)
+    df['Gross Orders'] = df['Gross Orders'].astype(int)
+    df['Add to Cart Units'] = df['Add to Cart Units'].astype(int)
+    df['Conversion Rate'] = df['Conversion Rate'].astype(float)
+
+    id_columns = ['Config sku']
+    for col in id_columns:
+        if col in df.columns:
+            df[col] = df[col].astype(str)
+
+    return df
+
+
+def clean_tiktok_pt(df):
+    df['Conversion Rate'] = df['Orders']/df['Product clicks']
+
+    columns_to_keep = [
+        'Product ID',
+        'Product Name',
+        'Product impressions',
+        'Product clicks',
+        'Orders',
+        'Add-to-cart count',
+        'CTR',
+        'Conversion Rate'
+    ]
+
+    df = df[columns_to_keep].copy()
+
+    df['CTR'] = df['CTR'].str.replace('%', '', regex=True).astype(float) / 100
+
+    df['Product impressions'] = df['Product impressions'].astype(int)
+    df['Product clicks'] = df['Product clicks'].astype(int)
+    df['Orders'] = df['Orders'].astype(int)
+    df['Add-to-cart count'] = df['Add-to-cart count'].astype(int)
+    df['CTR'] = df['CTR'].astype(float)
+    df['Conversion Rate'] = df['Conversion Rate'].astype(float)
+
+    id_columns = ['Product ID']
+    for col in id_columns:
+        if col in df.columns:
+            df[col] = df[col].astype(str)
+
 # =========================
-# UI
+# SALES DATA UI
 # =========================
 
-st.subheader("Upload Files")
+st.subheader("Sales Data")
 
 with st.container(border=True):
     uploaded_files = st.file_uploader(
@@ -432,6 +578,105 @@ if uploaded_files:
                 cleaned = clean_shopify(df)
             elif platform == "tiktok":
                 cleaned = clean_tiktok(df)
+            else:
+                st.error("Unknown platform")
+                continue
+
+            st.dataframe(cleaned.head(20))
+
+            output = io.BytesIO()
+            cleaned.to_excel(output, index=False)
+            output.seek(0)
+
+            base, ext = os.path.splitext(file.name)
+            filename = f"{base}_cleaned.xlsx"
+
+            st.download_button(
+                f"Download {file.name}",
+                data=output,
+                file_name=filename
+            )
+
+            zip_file.writestr(filename, output.getvalue())
+
+        except Exception as e:
+            st.error(f"Error: {e}")
+            
+        # Update progress
+        progress = i / total_files
+        progress_bar.progress(progress)
+        progress_text.text(f"Processing files... {i}/{total_files}")
+
+    zip_file.close()
+
+    progress_bar.progress(1.0)
+    progress_text.success("✅ All files processed successfully!")
+
+    st.divider()
+
+    st.download_button(
+        "⬇️ Download ALL as ZIP",
+        data=zip_buffer.getvalue(),
+        file_name="cleaned_files.zip"
+    )
+
+# =========================
+# PRODUCT DATA UI
+# =========================
+
+st.subheader("Product Traffic Data")
+
+with st.container(border=True):
+    uploaded_files = st.file_uploader(
+        label="Drag & drop your Excel/CSV files here",
+        type=["xlsx", "csv"],
+        accept_multiple_files=True,
+        help="You can upload multiple files at once.",
+        width="stretch"
+    )
+
+manual_override = st.selectbox(
+    "Manual Platform Override (optional)",
+    ["Auto Detect","lazada","shopee","zalora","shopify","tiktok"]
+)
+
+st.divider()
+st.subheader("Progress:")
+
+# Progress UI
+progress_bar = st.progress(0)
+progress_text = st.empty()
+
+# Processing uploaded files
+if uploaded_files:
+    total_files = len(uploaded_files)
+    
+    zip_buffer = io.BytesIO()
+    zip_file = zipfile.ZipFile(zip_buffer, "w")
+
+    for i, file in enumerate(uploaded_files, start=1):
+
+        platform = detect_platform(file.name) if manual_override == "Auto Detect" else manual_override
+
+        st.write(f"### 📄 {file.name}")
+        st.write(f"Platform: **{platform.upper()}**")
+
+        try:
+            if file.name.endswith(".csv"):
+                df = pd.read_csv(file)
+            else:
+                df = pd.read_excel(file)
+
+            if platform == "lazada":
+                cleaned = clean_lazada_pt(df)
+            elif platform == "shopee":
+                cleaned = clean_shopee_pt(df)
+            elif platform == "zalora":
+                cleaned = clean_zalora_pt(df)
+            elif platform == "shopify":
+                cleaned = clean_shopify_pt(df)
+            elif platform == "tiktok":
+                cleaned = clean_tiktok_pt(df)
             else:
                 st.error("Unknown platform")
                 continue
