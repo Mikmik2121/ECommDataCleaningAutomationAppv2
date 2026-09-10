@@ -9,7 +9,7 @@ import io
 import os
 import zipfile
 
-st.set_page_config(page_title="Ecommerce Cleaner", layout="wide")
+st.set_page_config(page_title="Ecommerce Data Processing Tool", layout="wide")
 
 st.title("E-Commerce Data Processing Tool")
 
@@ -257,7 +257,6 @@ def clean_shopify(df):
         "Payment Method",
         "Refunded Amount",
         "Outstanding Balance",
-        "Id",
         "Lineitem discount",
         "Tax 1 Name",
         "Tax 1 Value",
