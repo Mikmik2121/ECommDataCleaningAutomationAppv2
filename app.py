@@ -533,7 +533,8 @@ with st.container(border=True):
         type=["xlsx", "csv"],
         accept_multiple_files=True,
         help="You can upload multiple files at once.",
-        width="stretch"
+        width="stretch",
+        key="sales_uploader"
     )
 
 manual_override_sales = st.selectbox(
@@ -632,7 +633,8 @@ with st.container(border=True):
         type=["xlsx", "csv"],
         accept_multiple_files=True,
         help="You can upload multiple files at once.",
-        width="stretch"
+        width="stretch",
+        key="traffic_uploader"
     )
 
 manual_override_traffic = st.selectbox(
