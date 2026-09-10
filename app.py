@@ -271,7 +271,7 @@ def clean_shopify(df):
     df = df[columns_to_keep].copy()
 
     cols_to_fill = ['Financial Status', 'Fulfillment Status', 'Email', 'Accepts Marketing', 'Subtotal', 'Shipping', 
-                    'Taxes', 'Total', 'Discount Code', 'Discount Amount', 'Shipping Method', 'Payment Method', 'Payment Reference']
+                    'Taxes', 'Total', 'Discount Code', 'Discount Amount', 'Shipping Method', 'Payment Method']
     df[cols_to_fill] = df.groupby('Name')[cols_to_fill].transform('ffill')
     
     col_index = df.columns.get_loc("Lineitem price")
