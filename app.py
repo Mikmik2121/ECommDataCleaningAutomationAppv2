@@ -278,13 +278,13 @@ def clean_shopify(df):
     df.insert(col_index, "Amount Paid", df['Lineitem price'] * df['Lineitem quantity'])
 
     def parse_datetime(dt_str):
-    formats = ["%Y-%m-%d %H:%M:%S %z", "%d/%m/%Y %I:%M:%S %p"]
-    for fmt in formats:
-        try:
-            return pd.to_datetime(dt_str, format=fmt)
-        except (ValueError, TypeError):
-            continue
-    return pd.to_datetime(dt_str, errors='coerce')
+        formats = ["%Y-%m-%d %H:%M:%S %z", "%d/%m/%Y %I:%M:%S %p"]
+        for fmt in formats:
+            try:
+                return pd.to_datetime(dt_str, format=fmt)
+            except (ValueError, TypeError):
+                continue
+        return pd.to_datetime(dt_str, errors='coerce')
 
     df['Created at'] = df['Created at'].apply(parse_datetime)
 
