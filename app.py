@@ -539,7 +539,8 @@ with st.container(border=True):
 
 manual_override_sales = st.selectbox(
     "Manual Platform Override (optional)",
-    ["Auto Detect","lazada","shopee","zalora","shopify","tiktok"]
+    ["Auto Detect","lazada","shopee","zalora","shopify","tiktok"],
+    key="sales_platform_override"
 )
 
 st.divider()
@@ -595,7 +596,8 @@ if uploaded_sales_files:
             st.download_button(
                 f"Download {file.name}",
                 data=output,
-                file_name=filename
+                file_name=filename,
+                key=f"sales_download_{i}_{file.name}"
             )
 
             zip_file.writestr(filename, output.getvalue())
@@ -618,7 +620,8 @@ if uploaded_sales_files:
     st.download_button(
         "⬇️ Download ALL as ZIP",
         data=zip_buffer.getvalue(),
-        file_name="cleaned_files.zip"
+        file_name="cleaned_files.zip",
+        key="download_all_sales"
     )
 
 # =========================
@@ -639,7 +642,8 @@ with st.container(border=True):
 
 manual_override_traffic = st.selectbox(
     "Manual Platform Override (optional)",
-    ["Auto Detect","lazada","shopee","zalora","shopify","tiktok"]
+    ["Auto Detect","lazada","shopee","zalora","shopify","tiktok"],
+    key="traffic_platform_override"
 )
 
 st.divider()
@@ -695,7 +699,8 @@ if uploaded_traffic_files:
             st.download_button(
                 f"Download {file.name}",
                 data=output,
-                file_name=filename
+                file_name=filename,
+                key=f"traffic_download_{i}_{file.name}"
             )
 
             zip_file.writestr(filename, output.getvalue())
@@ -718,5 +723,6 @@ if uploaded_traffic_files:
     st.download_button(
         "⬇️ Download ALL as ZIP",
         data=zip_buffer.getvalue(),
-        file_name="cleaned_files.zip"
+        file_name="cleaned_files.zip",
+        key="download_all_traffic"
     )
