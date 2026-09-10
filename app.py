@@ -521,6 +521,8 @@ def clean_tiktok_pt(df):
         if col in df.columns:
             df[col] = df[col].astype(str)
 
+    return df
+
 # =========================
 # SALES DATA UI
 # =========================
@@ -633,7 +635,7 @@ st.subheader("Product Traffic Data")
 with st.container(border=True):
     uploaded_traffic_files = st.file_uploader(
         label="Drag & drop your Excel/CSV files here",
-        type=["xlsx", "csv"],
+        type=["xlsx", "xls", "csv"],
         accept_multiple_files=True,
         help="You can upload multiple files at once.",
         width="stretch",
