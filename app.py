@@ -1,3 +1,7 @@
+# E-COMMERCE DATA PROCESSING TOOL
+# Version: 2.0
+# Date: September 10, 2026
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -42,14 +46,11 @@ def detect_platform(filename):
         return "shopee"
     elif "ZALORA" in name:
         return "zalora"
-    elif "SHOPIFY" in name:
+    elif "SHOPIFY" in name or "WEBSITE" in name:
         return "shopify"
-    elif "SW_TIKTOK" in name or "SUNNYWOOD_TIKTOK" in name:
-        return "tiktok (Sunnywood)"
-    elif "TIKTOK" in name and "SW" not in name and "SUNNYWOOD_TIKTOK" not in name:
+    elif "TIKTOK" in name:
         return "tiktok"
     return None
-
 
 # =========================
 # CLEANING FUNCTIONS (FULL)
@@ -58,29 +59,29 @@ def detect_platform(filename):
 def clean_lazada(df):
     columns_to_keep = [
         'orderItemId',
-        'lazadaId',
+        'lazadaId', 
         'sellerSku',
         'lazadaSku',
-        'createTime',
-        'updateTime',
+        'createTime', 
+        'updateTime', 
         'rtsSla',
         'ttsSla',
-        'orderNumber',
+        'orderNumber', 
         'deliveredDate',
         'paidPrice',
         'unitPrice',
         'sellerDiscountTotal',
+        'platformDiscountTotal',
         'shippingFee',
         'itemName',
-        'variation',
+        'variation', 
         'shippingProvider',
         'trackingCode',
         'status',
-        'buyerFailedDeliveryReturnInitiator',
-        'buyerFailedDeliveryReason',
-        'buyerFailedDeliveryDetail',
-        'refundAmount',
+        'buyerFailedDeliveryReturnInitiator', 
+        'buyerFailedDeliveryReason'
     ]
+    
     df = df[columns_to_keep].copy()
 
     df['createTime'] = pd.to_datetime(df['createTime'], format='%d %b %Y %H:%M')
@@ -98,12 +99,12 @@ def clean_lazada(df):
 
     df = df.drop(columns=['Date_sort', 'Time_sort'])
 
-    df['paidPrice'] = df['paidPrice'].astype(float)
-    df['unitPrice'] = df['unitPrice'].astype(float)
-    df['sellerDiscountTotal'] = df['sellerDiscountTotal'].astype(float).fillna(0)
+    df['unitPrice'] = pd.to_numeric(df['unitPrice'], errors='coerce').fillna(0)
+    df['sellerDiscountTotal'] = pd.to_numeric(df['sellerDiscountTotal'], errors='coerce').fillna(0)
 
-    df['paidPrice'] = df['unitPrice'] + df['sellerDiscountTotal']
-    df['paidPrice'] = df['paidPrice'].where(df['paidPrice'] >= 0, 0)
+    col_index = df.columns.get_loc("paidPrice")
+    df.insert(col_index, "Amount Paid", df['unitPrice'] + df['sellerDiscountTotal'])
+    df['Amount Paid'] = df['Amount Paid'].where(df['Amount Paid'] >= 0, 0) # if result displays a negative number, convert to 0 instead
 
     for col in ['orderItemId','lazadaId','orderNumber']:
         df[col] = df[col].astype(str)
@@ -149,6 +150,7 @@ def clean_shopee(df):
         'Estimated Shipping Fee',
         # 'Username (Buyer)'
     ]
+    
     df = df[columns_to_keep].copy()
 
     mask = (
@@ -205,15 +207,25 @@ def clean_zalora(df):
     df = df[columns_to_keep].copy()
 
     df['Created at'] = pd.to_datetime(df['Created at'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-    df = df.sort_values(by=['Created at'])
 
-    df['Created at'] = df['Created at'].dt.strftime('%B %d, %Y')
+    col_index = df.columns.get_loc('Created at')
+    df.insert(col_index, "Created at(Date)", df['Created at'].dt.strftime('%B %d, %Y'))
+    df.insert(col_index + 1, "Time", df['Created at'].dt.strftime('%H:%M:%S'))
+
+    df = df.drop(columns=["Created at"])
+
+    df['Date_sort'] = pd.to_datetime(df['Created at(Date)'], format='%B %d, %Y')
+    df['Time_sort'] = pd.to_datetime(df['Time'], format='%H:%M:%S').dt.time
+
+    df = df.sort_values(by=['Date_sort', 'Time_sort'])
+
+    df = df.drop(columns=['Date_sort', 'Time_sort'])
 
     df['Paid Price'] = pd.to_numeric(df['Paid Price'], errors='coerce').fillna(0)
     df['Wallet Credits'] = pd.to_numeric(df['Wallet Credits'], errors='coerce').fillna(0)
 
     col_index = df.columns.get_loc("Paid Price")
-    df.insert(col_index, "Amount", df['Paid Price'] + df['Wallet Credits'])
+    df.insert(col_index, "Amount Paid", df['Paid Price'] + df['Wallet Credits'])
 
     df['Order Number'] = df['Order Number'].astype(str)
 
@@ -243,14 +255,12 @@ def clean_shopify(df):
         "Lineitem compare at price",
         "Lineitem sku",
         "Payment Method",
-        "Payment Reference",
         "Refunded Amount",
         "Outstanding Balance",
         "Id",
         "Lineitem discount",
         "Tax 1 Name",
         "Tax 1 Value",
-        "Payment ID",
         "Payment Terms Name",
         "Next Payment Due At",
         "Payment References"
@@ -261,24 +271,36 @@ def clean_shopify(df):
 
     df = df[columns_to_keep].copy()
 
-    cols_to_fill = ['Financial Status', 'Fulfillment Status']
+    cols_to_fill = ['Financial Status', 'Fulfillment Status', 'Email', 'Accepts Marketing', 'Subtotal', 'Shipping', 'Taxes', 'Total', 'Discount Code',
+                   'Discount Amount', 'Shipping Method', 'Payment Method', 'Payment Reference']
     df[cols_to_fill] = df.groupby('Name')[cols_to_fill].transform('ffill')
+    
+    col_index = df.columns.get_loc("Lineitem price")
+    df.insert(col_index, "Amount Paid", df['Lineitem price'] * df['Lineitem quantity'])
 
-    def try_parse_datetime(dt_str):
-        from datetime import datetime
-        for fmt in ["%Y-%m-%d %H:%M:%S %z","%d/%m/%Y %I:%M:%S %p"]:
-            try:
-                return datetime.strptime(str(dt_str), fmt)
-            except:
-                continue
-        return pd.to_datetime(dt_str, errors='coerce')
+    def parse_datetime(dt_str):
+    formats = ["%Y-%m-%d %H:%M:%S %z", "%d/%m/%Y %I:%M:%S %p"]
+    for fmt in formats:
+        try:
+            return pd.to_datetime(dt_str, format=fmt)
+        except (ValueError, TypeError):
+            continue
+    return pd.to_datetime(dt_str, errors='coerce')
 
-    df['Created at'] = df['Created at'].apply(try_parse_datetime)
-    df = df.sort_values(by='Created at')
+    df['Created at'] = df['Created at'].apply(parse_datetime)
 
-    df['Lineitem price'] = df['Lineitem price'] * df['Lineitem quantity']
+    col_index = df.columns.get_loc('Created at')
+    df.insert(col_index, "Created at(Date)", df['Created at'].dt.strftime('%B %d, %Y'))
+    df.insert(col_index + 1, "Time", df['Created at'].dt.strftime('%H:%M:%S'))
 
-    df['Created at'] = pd.to_datetime(df['Created at']).dt.strftime('%B %d, %Y')
+    df = df.drop(columns=["Created at"])
+
+    df['Date_sort'] = pd.to_datetime(df['Created at(Date)'], format='%B %d, %Y')
+    df['Time_sort'] = pd.to_datetime(df['Time'], format='%H:%M:%S').dt.time
+
+    df = df.sort_values(by=['Date_sort', 'Time_sort'])
+
+    df = df.drop(columns=['Date_sort', 'Time_sort'])
 
     return df
 
@@ -319,69 +341,6 @@ def clean_tiktok(df):
       "Tracking ID",
       "Shipping Provider Name",
       # "Buyer Username",
-      "Product Category",
-      "Package ID"
-    ] 
-    df = df[columns_to_keep].copy()
-
-    df['Created Time'] = pd.to_datetime(df['Created Time'],
-                                        format="%m/%d/%Y %I:%M:%S %p",
-                                        errors='coerce')
-
-    df = df.sort_values(by='Created Time', na_position='last')
-
-    df['Created Time'] = df['Created Time'].dt.strftime('%B %d, %Y')
-
-    df['SKU Subtotal After Discount'] = pd.to_numeric(
-        df['SKU Subtotal After Discount'], errors='coerce').fillna(0)
-
-    df['Quantity'] = pd.to_numeric(df['Quantity'], errors='coerce').fillna(0).astype(int)
-
-    for col in ['Order ID','SKU ID']:
-        df[col] = df[col].astype(str)
-
-    df['Package ID'] = df['Package ID'].apply(
-        lambda x: str(int(x)) if pd.notnull(x) else None)
-
-    return df
-
-def clean_SW_tiktok(df):
-    columns_to_keep = [
-      "Order ID",
-      "Order Status",
-      "Order Substatus",
-      "Cancelation/Return Type",
-      "SKU ID",
-      "Seller SKU",
-      "Product Name",
-      "Variation",
-      "Quantity",
-      "Sku Quantity of return",
-      "SKU Unit Original Price",
-      "SKU Subtotal Before Discount",
-      "SKU Platform Discount",
-      "SKU Seller Discount",
-      "SKU Subtotal After Discount",
-      "Shipping Fee After Discount",
-      "Original Shipping Fee",
-      "Shipping Fee Seller Discount",
-      "Shipping Fee Platform Discount",
-      "Payment platform discount",
-      "Taxes",
-      "Order Amount",
-      "Order Refund Amount",
-      "Created Time",
-      "Paid Time",
-      "RTS Time",
-      "Shipped Time",
-      "Delivered Time",
-      "Cancelled Time",
-      "Cancel By",
-      "Cancel Reason",
-      "Tracking ID",
-      "Shipping Provider Name",
-      # "Buyer Username",
-      "Product Category",
       "Package ID"
     ] 
     df = df[columns_to_keep].copy()
@@ -400,9 +359,12 @@ def clean_SW_tiktok(df):
     df = df.sort_values(by=['Date_sort', 'Time_sort'])
 
     df = df.drop(columns=['Date_sort', 'Time_sort'])
-    
-    df['SKU Subtotal After Discount'] = pd.to_numeric(
-        df['SKU Subtotal After Discount'], errors='coerce').fillna(0)
+
+    df['SKU Subtotal Before Discount'] = pd.to_numeric(df['SKU Subtotal Before Discount'], errors='coerce').fillna(0)
+    df['SKU Seller Discount'] = pd.to_numeric(df['SKU Seller Discount'], errors='coerce').fillna(0)
+
+    col_index = df.columns.get_loc("SKU Subtotal Before Discount")
+    df.insert(col_index, "Amount Paid", df['SKU Subtotal Before Discount'] - df['SKU Seller Discount'])
 
     df['Quantity'] = pd.to_numeric(df['Quantity'], errors='coerce').fillna(0).astype(int)
 
@@ -431,7 +393,7 @@ with st.container(border=True):
 
 manual_override = st.selectbox(
     "Manual Platform Override (optional)",
-    ["Auto Detect","lazada","shopee","zalora","shopify","tiktok", "tiktok (Sunnywood)"]
+    ["Auto Detect","lazada","shopee","zalora","shopify","tiktok"]
 )
 
 st.divider()
@@ -471,8 +433,6 @@ if uploaded_files:
                 cleaned = clean_shopify(df)
             elif platform == "tiktok":
                 cleaned = clean_tiktok(df)
-            elif platform == "tiktok (Sunnywood)":
-                cleaned = clean_SW_tiktok(df)
             else:
                 st.error("Unknown platform")
                 continue
