@@ -622,7 +622,7 @@ if uploaded_sales_files:
     st.download_button(
         "⬇️ Download ALL as ZIP",
         data=zip_buffer.getvalue(),
-        file_name="cleaned_files.zip",
+        file_name="cleaned_sales_files.zip",
         key="download_all_sales"
     )
 
@@ -725,6 +725,6 @@ if uploaded_traffic_files:
     st.download_button(
         "⬇️ Download ALL as ZIP",
         data=zip_buffer.getvalue(),
-        file_name="cleaned_files.zip",
+        file_name="cleaned_traffic_files.zip",
         key="download_all_traffic"
     )
