@@ -528,7 +528,7 @@ def clean_tiktok_pt(df):
 st.subheader("Sales Data")
 
 with st.container(border=True):
-    uploaded_files = st.file_uploader(
+    uploaded_sales_files = st.file_uploader(
         label="Drag & drop your Excel/CSV files here",
         type=["xlsx", "csv"],
         accept_multiple_files=True,
@@ -536,7 +536,7 @@ with st.container(border=True):
         width="stretch"
     )
 
-manual_override = st.selectbox(
+manual_override_sales = st.selectbox(
     "Manual Platform Override (optional)",
     ["Auto Detect","lazada","shopee","zalora","shopify","tiktok"]
 )
@@ -545,19 +545,19 @@ st.divider()
 st.subheader("Progress:")
 
 # Progress UI
-progress_bar = st.progress(0)
-progress_text = st.empty()
+progress_bar_sales = st.progress(0)
+progress_text_sales = st.empty()
 
 # Processing uploaded files
-if uploaded_files:
-    total_files = len(uploaded_files)
+if uploaded_sales_files:
+    total_sales_files = len(uploaded_sales_files)
     
     zip_buffer = io.BytesIO()
     zip_file = zipfile.ZipFile(zip_buffer, "w")
 
-    for i, file in enumerate(uploaded_files, start=1):
+    for i, file in enumerate(uploaded_sales_files, start=1):
 
-        platform = detect_platform(file.name) if manual_override == "Auto Detect" else manual_override
+        platform = detect_platform(file.name) if manual_override_sales == "Auto Detect" else manual_override_sales
 
         st.write(f"### 📄 {file.name}")
         st.write(f"Platform: **{platform.upper()}**")
@@ -603,14 +603,14 @@ if uploaded_files:
             st.error(f"Error: {e}")
             
         # Update progress
-        progress = i / total_files
-        progress_bar.progress(progress)
-        progress_text.text(f"Processing files... {i}/{total_files}")
+        progress_sales = i / total_sales_files
+        progress_bar_sales.progress(progress_sales)
+        progress_text_sales.text(f"Processing files... {i}/{total_sales_files}")
 
     zip_file.close()
 
-    progress_bar.progress(1.0)
-    progress_text.success("✅ All files processed successfully!")
+    progress_bar_sales.progress(1.0)
+    progress_text_sales.success(f"✅ All files processed successfully! {i}/{total_sales_files}")
 
     st.divider()
 
@@ -621,13 +621,13 @@ if uploaded_files:
     )
 
 # =========================
-# PRODUCT DATA UI
+# PRODUCT TRAFFIC DATA UI
 # =========================
 
 st.subheader("Product Traffic Data")
 
 with st.container(border=True):
-    uploaded_files = st.file_uploader(
+    uploaded_traffic_files = st.file_uploader(
         label="Drag & drop your Excel/CSV files here",
         type=["xlsx", "csv"],
         accept_multiple_files=True,
@@ -635,7 +635,7 @@ with st.container(border=True):
         width="stretch"
     )
 
-manual_override = st.selectbox(
+manual_override_traffic = st.selectbox(
     "Manual Platform Override (optional)",
     ["Auto Detect","lazada","shopee","zalora","shopify","tiktok"]
 )
@@ -644,19 +644,19 @@ st.divider()
 st.subheader("Progress:")
 
 # Progress UI
-progress_bar = st.progress(0)
-progress_text = st.empty()
+progress_bar_traffic = st.progress(0)
+progress_text_traffic = st.empty()
 
 # Processing uploaded files
-if uploaded_files:
-    total_files = len(uploaded_files)
+if uploaded_traffic_files:
+    total_traffic_files = len(uploaded_traffic_files)
     
     zip_buffer = io.BytesIO()
     zip_file = zipfile.ZipFile(zip_buffer, "w")
 
-    for i, file in enumerate(uploaded_files, start=1):
+    for i, file in enumerate(uploaded_traffic_files, start=1):
 
-        platform = detect_platform(file.name) if manual_override == "Auto Detect" else manual_override
+        platform = detect_platform(file.name) if manual_override_traffic == "Auto Detect" else manual_override_traffic
 
         st.write(f"### 📄 {file.name}")
         st.write(f"Platform: **{platform.upper()}**")
@@ -702,14 +702,14 @@ if uploaded_files:
             st.error(f"Error: {e}")
             
         # Update progress
-        progress = i / total_files
-        progress_bar.progress(progress)
-        progress_text.text(f"Processing files... {i}/{total_files}")
+        progress_traffic = i / total_traffic_files
+        progress_bar_traffic.progress(progress_traffic)
+        progress_text_traffic.text(f"Processing files... {i}/{total_traffic_files}")
 
     zip_file.close()
 
-    progress_bar.progress(1.0)
-    progress_text.success("✅ All files processed successfully!")
+    progress_bar_traffic.progress(1.0)
+    progress_text_traffic.success(f"✅ All files processed successfully! {i}/{total_traffic_files}")
 
     st.divider()
 
