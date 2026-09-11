@@ -570,12 +570,12 @@ def clean_shopee_returns(df):
 
 def clean_tiktok_returns(df):
     columns_to_keep = [
-        'Time Requested ',
-        'Order ID ',
+        'Time Requested',
+        'Order ID',
         'Seller SKU',
         'Return Reason', 
-        'Return Status ', 
-        'Return Sub Status '
+        'Return Status', 
+        'Return Sub Status'
     ]
     
     df = df[columns_to_keep].copy()
@@ -711,7 +711,7 @@ with st.container(border=True):
 
 manual_override_traffic = st.selectbox(
     "Manual Platform Override (optional)",
-    ["Auto Detect","lazada","shopee","zalora","shopify","tiktok"],
+    ["Auto Detect","lazada","shopee","zalora","tiktok"],
     key="traffic_platform_override"
 )
 
@@ -812,7 +812,7 @@ with st.container(border=True):
 
 manual_override_returns = st.selectbox(
     "Manual Platform Override (optional)",
-    ["Auto Detect","lazada","shopee","zalora","shopify","tiktok"],
+    ["Auto Detect","lazada","shopee","tiktok"],
     key="returns_platform_override"
 )
 
