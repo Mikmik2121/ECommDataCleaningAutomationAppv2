@@ -580,7 +580,7 @@ def clean_tiktok_returns(df):
     
     df = df[columns_to_keep].copy()
 
-    df['Time Requested'] = pd.to_datetime(df['Time Requested'], format="%m/%d/%Y %I:%M:%S %p", errors='coerce')
+    df['Time Requested'] = pd.to_datetime(df['Time Requested'], format="%d/%m/%Y %H:%M:%S", errors='coerce')
     df = df.sort_values(by='Time Requested')
     df['Time Requested'] = df['Time Requested'].dt.strftime('%B %d, %Y')
 
