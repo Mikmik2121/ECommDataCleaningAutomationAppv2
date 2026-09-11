@@ -56,7 +56,7 @@ def detect_platform(filename):
 # RAW SALES DATA CLEANING FUNCTIONS
 # =================================
 
-def clean_lazada(df):
+def clean_lazada_sales(df):
     columns_to_keep = [
         'orderItemId',
         'sellerSku',
@@ -112,7 +112,7 @@ def clean_lazada(df):
     return df
 
 
-def clean_shopee(df):
+def clean_shopee_sales(df):
     columns_to_keep = ['Order ID',
         'Order Status',
         'Cancel reason',
@@ -179,7 +179,7 @@ def clean_shopee(df):
     return df
 
 
-def clean_zalora(df):
+def clean_zalora_sales(df):
     columns_to_keep = [
         'Order Item Id',
         'Zalora Id',
@@ -231,7 +231,7 @@ def clean_zalora(df):
     return df
 
 
-def clean_shopify(df):
+def clean_shopify_sales(df):
     columns_to_keep = [ 
         "Name",
         "Email",
@@ -304,7 +304,7 @@ def clean_shopify(df):
     return df
 
 
-def clean_tiktok(df):
+def clean_tiktok_sales(df):
     columns_to_keep = [
       "Order ID",
       "Order Status",
@@ -378,7 +378,7 @@ def clean_tiktok(df):
 # RAW PRODUCT TRAFFIC DATA CLEANING FUNCTIONS
 # =============================================================================================
 
-def clean_lazada_pt(df):
+def clean_lazada_traffic(df):
     df = df[df['Seller SKU'] == "-"]
 
     columns_to_keep = [
@@ -414,7 +414,7 @@ def clean_lazada_pt(df):
     return df
 
 
-def clean_shopee_pt(df):
+def clean_shopee_traffic(df):
     df = df[df['SKU'] == "-"]
 
     # Columns to keep
@@ -454,7 +454,7 @@ def clean_shopee_pt(df):
     return df
 
 
-def clean_zalora_pt(df):
+def clean_zalora_traffic(df):
     df['Add to Cart Units'] = df['Gross Orders']
 
     columns_to_keep = [
@@ -490,7 +490,7 @@ def clean_zalora_pt(df):
     return df
 
 
-def clean_tiktok_pt(df):
+def clean_tiktok_traffic(df):
     df['Conversion Rate'] = df['Orders']/df['Product clicks']
 
     columns_to_keep = [
@@ -519,6 +519,67 @@ def clean_tiktok_pt(df):
     for col in id_columns:
         if col in df.columns:
             df[col] = df[col].astype(str)
+
+    return df
+
+# =======================================
+# RAW RETURN/REFUND DATA CLEANING FUNCTIONS
+# =======================================
+
+def clean_lazada_returns(df):
+    columns_to_keep = [
+        'Return Order Date',
+        'Order ID',
+        'Seller SKU ID',
+        'Return Reason', 
+        'Status', 
+        'Logistic Status'
+    ]
+    
+    df = df[columns_to_keep].copy()
+
+    df['Return Order Date'] = pd.to_datetime(df['Return Order Date'], format='%d %b %Y %H:%M')
+    df['Return Order Date'] = df['Return Order Date'].dt.strftime('%B %d, %Y')
+
+    df['Order ID'] = df['Order ID'].astype(str)
+
+    return df
+
+def clean_shopee_returns(df):
+    columns_to_keep = [
+        'Return Creation Time',
+        'Order ID',
+        'SKU',
+        'Return Reason', 
+        'Return / Refund Status', 
+        'Return Tracking Status'
+    ]
+    
+    df = df[columns_to_keep].copy()
+
+    df['Return Creation Time'] = pd.to_datetime(df['Return Creation Time'], format='%Y-%m-%d %H:%M')
+    df['Return Creation Time'] = df['Return Creation Time'].dt.strftime('%B %d, %Y')
+
+    df['Order ID'] = df['Order ID'].astype(str)
+
+    return df
+
+def clean_tiktok_returns(df):
+    columns_to_keep = [
+        'Time Requested',
+        'Order ID',
+        'Seller SKU',
+        'Return Reason', 
+        'Return Status', 
+        'Return Sub Status'
+    ]
+    
+    df = df[columns_to_keep].copy()
+
+    df['Time Requested'] = pd.to_datetime(df['Time Requested'], format="%m/%d/%Y %I:%M:%S %p", errors='coerce')
+    df['Time Requested'] = df['Time Requested'].dt.strftime('%B %d, %Y')
+
+    df['Order ID'] = df['Order ID'].astype(str)
 
     return df
 
@@ -572,15 +633,15 @@ if uploaded_sales_files:
                 df = pd.read_excel(file)
 
             if platform == "lazada":
-                cleaned = clean_lazada(df)
+                cleaned = clean_lazada_sales(df)
             elif platform == "shopee":
-                cleaned = clean_shopee(df)
+                cleaned = clean_shopee_sales(df)
             elif platform == "zalora":
-                cleaned = clean_zalora(df)
+                cleaned = clean_zalora_sales(df)
             elif platform == "shopify":
-                cleaned = clean_shopify(df)
+                cleaned = clean_shopify_sales(df)
             elif platform == "tiktok":
-                cleaned = clean_tiktok(df)
+                cleaned = clean_tiktok_sales(df)
             else:
                 st.error("Unknown platform")
                 continue
@@ -675,15 +736,13 @@ if uploaded_traffic_files:
                 df = pd.read_excel(file)
 
             if platform == "lazada":
-                cleaned = clean_lazada_pt(df)
+                cleaned = clean_lazada_traffic(df)
             elif platform == "shopee":
-                cleaned = clean_shopee_pt(df)
+                cleaned = clean_shopee_traffic(df)
             elif platform == "zalora":
-                cleaned = clean_zalora_pt(df)
-            elif platform == "shopify":
-                cleaned = clean_shopify_pt(df)
+                cleaned = clean_zalora_traffic(df)
             elif platform == "tiktok":
-                cleaned = clean_tiktok_pt(df)
+                cleaned = clean_tiktok_traffic(df)
             else:
                 st.error("Unknown platform")
                 continue
@@ -726,4 +785,103 @@ if uploaded_traffic_files:
         data=zip_buffer.getvalue(),
         file_name="cleaned_traffic_files.zip",
         key="download_all_traffic"
+    )
+
+# =========================
+# RETURN/REFUND DATA UI
+# =========================
+
+st.subheader("Return/Refund Data")
+
+with st.container(border=True):
+    uploaded_returns_files = st.file_uploader(
+        label="Drag & drop your Excel/CSV files here",
+        type=["xlsx", "xls", "csv"],
+        accept_multiple_files=True,
+        help="You can upload multiple files at once.",
+        width="stretch",
+        key="returns_uploader"
+    )
+
+manual_override_returns = st.selectbox(
+    "Manual Platform Override (optional)",
+    ["Auto Detect","lazada","shopee","zalora","shopify","tiktok"],
+    key="returns_platform_override"
+)
+
+st.divider()
+st.subheader("Progress:")
+
+# Progress UI
+progress_bar_returns = st.progress(0)
+progress_text_returns = st.empty()
+
+# Processing uploaded files
+if uploaded_returns_files:
+    total_returns_files = len(uploaded_returns_files)
+    
+    zip_buffer = io.BytesIO()
+    zip_file = zipfile.ZipFile(zip_buffer, "w")
+
+    for i, file in enumerate(uploaded_returns_files, start=1):
+
+        platform = detect_platform(file.name) if manual_override_returns == "Auto Detect" else manual_override_returns
+
+        st.write(f"### 📄 {file.name}")
+        st.write(f"Platform: **{platform.upper()}**")
+
+        try:
+            if file.name.endswith(".csv"):
+                df = pd.read_csv(file)
+            else:
+                df = pd.read_excel(file)
+
+            if platform == "lazada":
+                cleaned = clean_lazada_returns(df)
+            elif platform == "shopee":
+                cleaned = clean_shopee_returns(df)
+            elif platform == "tiktok":
+                cleaned = clean_tiktok_returns(df)
+            else:
+                st.error("Unknown platform")
+                continue
+
+            st.dataframe(cleaned.head(20))
+
+            output = io.BytesIO()
+            cleaned.to_excel(output, index=False)
+            output.seek(0)
+
+            base, ext = os.path.splitext(file.name)
+            filename = f"{base}_cleaned.xlsx"
+
+            st.download_button(
+                f"Download {file.name}",
+                data=output,
+                file_name=filename,
+                key=f"returns_download_{i}_{file.name}"
+            )
+
+            zip_file.writestr(filename, output.getvalue())
+
+        except Exception as e:
+            st.error(f"Error: {e}")
+            
+        # Update progress
+        progress_returns = i / total_returns_files
+        progress_bar_returns.progress(progress_returns)
+        progress_text_returns.text(f"Processing files... {i}/{total_returns_files}")
+
+    zip_file.close()
+
+    progress_bar_returns.progress(1.0)
+    progress_text_returns.success(f"✅ All files processed successfully! {i}/{total_returns_files}")
+
+    st.divider()
+
+    st.download_button(
+        "⬇️ Download ALL as ZIP",
+        data=zip_buffer.getvalue(),
+        file_name="cleaned_returns_files.zip",
+        key="download_all_returns"
     )
