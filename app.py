@@ -105,7 +105,7 @@ def clean_lazada(df):
     df.insert(col_index, "Amount Paid", df['unitPrice'] - df['sellerDiscountTotal'])
     df['Amount Paid'] = df['Amount Paid'].where(df['Amount Paid'] >= 0, 0) # if result displays a negative number, convert to 0 instead
 
-    for col in ['orderItemId','lazadaId','orderNumber']:
+    for col in ['orderItemId','orderNumber']:
         df[col] = df[col].astype(str)
 
     return df
