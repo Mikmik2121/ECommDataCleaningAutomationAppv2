@@ -59,7 +59,6 @@ def detect_platform(filename):
 def clean_lazada(df):
     columns_to_keep = [
         'orderItemId',
-        'lazadaId', 
         'sellerSku',
         'lazadaSku',
         'createTime', 
@@ -100,10 +99,10 @@ def clean_lazada(df):
     df = df.drop(columns=['Date_sort', 'Time_sort'])
 
     df['unitPrice'] = pd.to_numeric(df['unitPrice'], errors='coerce').fillna(0)
-    df['sellerDiscountTotal'] = pd.to_numeric(df['sellerDiscountTotal'], errors='coerce').fillna(0)
+    df['sellerDiscountTotal'] = pd.to_numeric(df['sellerDiscountTotal'], errors='coerce').fillna(0).abs()
 
     col_index = df.columns.get_loc("paidPrice")
-    df.insert(col_index, "Amount Paid", df['unitPrice'] + df['sellerDiscountTotal'])
+    df.insert(col_index, "Amount Paid", df['unitPrice'] - df['sellerDiscountTotal'])
     df['Amount Paid'] = df['Amount Paid'].where(df['Amount Paid'] >= 0, 0) # if result displays a negative number, convert to 0 instead
 
     for col in ['orderItemId','lazadaId','orderNumber']:
@@ -148,7 +147,6 @@ def clean_shopee(df):
         'Service Fee',
         'Grand Total',
         'Estimated Shipping Fee',
-        # 'Username (Buyer)'
     ]
     
     df = df[columns_to_keep].copy()
@@ -270,8 +268,9 @@ def clean_shopify(df):
 
     df = df[columns_to_keep].copy()
 
-    cols_to_fill = ['Financial Status', 'Fulfillment Status', 'Email', 'Accepts Marketing', 'Subtotal', 'Shipping', 
-                    'Taxes', 'Total', 'Discount Code', 'Discount Amount', 'Shipping Method', 'Payment Method']
+    cols_to_fill = ['Financial Status', 'Fulfillment Status', 'Paid at', 'Fulfilled at', 'Email', 'Accepts Marketing', 'Subtotal', 'Shipping', 
+                    'Taxes', 'Total', 'Discount Code', 'Discount Amount', 'Shipping Method', 'Payment Method', 'Refunded Amount',
+                   'Outstanding Balance', 'Tax 1 Name', 'Tax 1 Value', 'Payment Terms Name', 'Next Payment Due At', 'Payment References']
     df[cols_to_fill] = df.groupby('Name')[cols_to_fill].transform('ffill')
     
     col_index = df.columns.get_loc("Lineitem price")
@@ -339,7 +338,6 @@ def clean_tiktok(df):
       "Cancel Reason",
       "Tracking ID",
       "Shipping Provider Name",
-      # "Buyer Username",
       "Package ID"
     ] 
     df = df[columns_to_keep].copy()
