@@ -562,8 +562,6 @@ def clean_shopee_returns(df):
     df = df.sort_values(by='Return Creation Time')
     df['Return Creation Time'] = df['Return Creation Time'].dt.strftime('%B %d, %Y')
 
-    df = df.sort_values(by=['Return Creation Time'])
-
     df['Order ID'] = df['Order ID'].astype(str)
 
     return df
@@ -583,8 +581,6 @@ def clean_tiktok_returns(df):
     df['Time Requested'] = pd.to_datetime(df['Time Requested'], format="%d/%m/%Y %H:%M:%S", errors='coerce')
     df = df.sort_values(by='Time Requested')
     df['Time Requested'] = df['Time Requested'].dt.strftime('%B %d, %Y')
-
-    df = df.sort_values(by=['Time Requested'])
 
     df['Order ID'] = df['Order ID'].astype(str)
 
