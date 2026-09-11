@@ -539,9 +539,8 @@ def clean_lazada_returns(df):
     df = df[columns_to_keep].copy()
 
     df['Return Order Date'] = pd.to_datetime(df['Return Order Date'], format='%Y-%m-%d %H:%M:%S')
+    df = df.sort_values(by='Return Order Date')
     df['Return Order Date'] = df['Return Order Date'].dt.strftime('%B %d, %Y')
-
-    df = df.sort_values(by=['Return Order Date'])
 
     df['Order ID'] = df['Order ID'].astype(str)
 
@@ -560,6 +559,7 @@ def clean_shopee_returns(df):
     df = df[columns_to_keep].copy()
 
     df['Return Creation Time'] = pd.to_datetime(df['Return Creation Time'], format='%Y-%m-%d %H:%M')
+    df = df.sort_values(by='Return Creation Time')
     df['Return Creation Time'] = df['Return Creation Time'].dt.strftime('%B %d, %Y')
 
     df = df.sort_values(by=['Return Creation Time'])
@@ -581,6 +581,7 @@ def clean_tiktok_returns(df):
     df = df[columns_to_keep].copy()
 
     df['Time Requested'] = pd.to_datetime(df['Time Requested'], format="%m/%d/%Y %I:%M:%S %p", errors='coerce')
+    df = df.sort_values(by='Time Requested')
     df['Time Requested'] = df['Time Requested'].dt.strftime('%B %d, %Y')
 
     df = df.sort_values(by=['Time Requested'])
