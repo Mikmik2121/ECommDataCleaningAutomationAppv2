@@ -569,13 +569,10 @@ def clean_shopee_returns(df):
     return df
 
 def clean_tiktok_returns(df):
-    df.columns = df.columns.str.strip()
-    df.columns = df.columns.str.replace('\n', ' ')   # remove line breaks
-    df.columns = df.columns.str.replace(r'\s+', ' ', regex=True)  # collapse multiple spaces
-
     columns_to_keep = [
         'Time Requested',
-        'Order ID','Seller SKU',
+        'Order ID',
+        'Seller SKU',
         'Return Reason', 
         'Return Status', 
         'Return Sub Status',
