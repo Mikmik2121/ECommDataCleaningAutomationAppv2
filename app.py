@@ -538,7 +538,7 @@ def clean_lazada_returns(df):
     
     df = df[columns_to_keep].copy()
 
-    df['Return Order Date'] = pd.to_datetime(df['Return Order Date'], format='%d %b %Y %H:%M')
+    df['Return Order Date'] = pd.to_datetime(df['Return Order Date'], format='%Y-%m-%d %H:%M:%S')
     df['Return Order Date'] = df['Return Order Date'].dt.strftime('%B %d, %Y')
 
     df['Order ID'] = df['Order ID'].astype(str)
@@ -566,12 +566,12 @@ def clean_shopee_returns(df):
 
 def clean_tiktok_returns(df):
     columns_to_keep = [
-        'Time Requested',
-        'Order ID',
-        'Seller SKU',
-        'Return Reason', 
-        'Return Status', 
-        'Return Sub Status'
+        "Time Requested",
+        "Order ID",
+        "Seller SKU",
+        "Return Reason", 
+        "Return Status", 
+        "Return Sub Status"
     ]
     
     df = df[columns_to_keep].copy()
