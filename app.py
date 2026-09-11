@@ -570,6 +570,7 @@ def clean_shopee_returns(df):
 
 def clean_tiktok_returns(df):
     columns_to_keep = [
+        'Return Order ID',
         'Time Requested',
         'Order ID',
         'Seller SKU',
