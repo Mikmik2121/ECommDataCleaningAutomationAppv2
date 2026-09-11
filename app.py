@@ -100,6 +100,7 @@ def clean_lazada(df):
 
     df['unitPrice'] = pd.to_numeric(df['unitPrice'], errors='coerce').fillna(0)
     df['sellerDiscountTotal'] = pd.to_numeric(df['sellerDiscountTotal'], errors='coerce').fillna(0).abs()
+    df['platformDiscountTotal'] = pd.to_numeric(df['platformDiscountTotal'], errors='coerce').fillna(0).abs()
 
     col_index = df.columns.get_loc("paidPrice")
     df.insert(col_index, "Amount Paid", df['unitPrice'] - df['sellerDiscountTotal'])
