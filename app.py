@@ -569,20 +569,15 @@ def clean_shopee_returns(df):
     return df
 
 def clean_tiktok_returns(df):
-    """
     columns_to_keep = [
-        "Time Requested",
-        "Order ID",
-        "Seller SKU",
-        "Return Reason", 
-        "Return Status", 
-        "Return Sub Status"
+        'Time Requested ',
+        'Order ID ',
+        'Seller SKU',
+        'Return Reason', 
+        'Return Status ', 
+        'Return Sub Status '
     ]
     
-    df = df[columns_to_keep].copy()
-    """
-    df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
-    columns_to_keep = ["time_requested", "order_id", "seller_sku", "return_reason", "return_status", "return_sub_status"]
     df = df[columns_to_keep].copy()
 
     df['Time Requested'] = pd.to_datetime(df['Time Requested'], format="%m/%d/%Y %I:%M:%S %p", errors='coerce')
