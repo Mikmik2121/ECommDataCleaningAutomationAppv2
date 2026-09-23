@@ -176,6 +176,8 @@ def clean_shopee_sales(df):
     df['Product Subtotal'] = df['Product Subtotal'].astype(float)
     df['Quantity'] = df['Quantity'].astype(int)
 
+    df['SKU Reference No.'] = df['SKU Reference No.'].astype(str).str.strip()
+
     return df
 
 
