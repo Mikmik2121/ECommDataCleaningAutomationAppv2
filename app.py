@@ -8,6 +8,7 @@ import numpy as np
 import io
 import os
 import zipfile
+from openpyxl import load_workbook
 
 st.set_page_config(page_title="Ecommerce Data Processing Tool", layout="wide")
 
@@ -528,7 +529,14 @@ def clean_tiktok_traffic(df):
 # RAW RETURN/REFUND DATA CLEANING FUNCTIONS
 # =======================================
 
-def clean_lazada_returns(df):
+def clean_lazada_returns(file):
+    
+    if file.name.endswith(".csv"):
+        df = pd.read_csv(file)
+    else:
+        df = pd.read_excel(file)
+
+    
     columns_to_keep = [
         'Return Order Date',
         'Order ID',
@@ -548,7 +556,13 @@ def clean_lazada_returns(df):
 
     return df
 
-def clean_shopee_returns(df):
+def clean_shopee_returns(file):
+    
+    if file.name.endswith(".csv"):
+        df = pd.read_csv(file)
+    else:
+        df = pd.read_excel(file)
+    
     columns_to_keep = [
         'Return Creation Time',
         'Order ID',
@@ -568,7 +582,20 @@ def clean_shopee_returns(df):
 
     return df
 
-def clean_tiktok_returns(df):
+def clean_tiktok_returns(file):
+    
+    if file.name.endswith(".csv"):
+        df = pd.read_csv(file)
+    else:
+        df = pd.read_excel(file)
+        
+    # read dataframe
+    wb = load_workbook(file, data_only=True)
+    ws = wb[wb.sheetnames[0]]
+
+    data = list(ws.values)
+    df = pd.DataFrame(data[1:], columns=data[0])
+    
     columns_to_keep = [
         'Time Requested',
         'Order ID',
@@ -836,17 +863,12 @@ if uploaded_returns_files:
         st.write(f"Platform: **{platform.upper()}**")
 
         try:
-            if file.name.endswith(".csv"):
-                df = pd.read_csv(file)
-            else:
-                df = pd.read_excel(file)
-
             if platform == "lazada":
-                cleaned = clean_lazada_returns(df)
+                cleaned = clean_lazada_returns(file)
             elif platform == "shopee":
-                cleaned = clean_shopee_returns(df)
+                cleaned = clean_shopee_returns(file)
             elif platform == "tiktok":
-                cleaned = clean_tiktok_returns(df)
+                cleaned = clean_tiktok_returns(file)
             else:
                 st.error("Unknown platform")
                 continue
