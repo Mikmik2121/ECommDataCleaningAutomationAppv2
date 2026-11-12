@@ -342,7 +342,8 @@ def clean_tiktok_sales(df):
       "Cancel Reason",
       "Tracking ID",
       "Shipping Provider Name",
-      "Package ID"
+      "Package ID",
+      "Order Channel"
     ] 
     df = df[columns_to_keep].copy()
 
